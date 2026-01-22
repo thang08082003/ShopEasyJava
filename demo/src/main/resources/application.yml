@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/shopeasy?useSSL=false&serverTimezone=UTC}
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:password}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/shopeasy?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true}
+    username: ${DB_USER:shopeasy}
+    password: ${DB_PASSWORD:shopeasy}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

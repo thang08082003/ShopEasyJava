@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: shopeasy-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: shopeasy
+      MYSQL_USER: shopeasy
+      MYSQL_PASSWORD: shopeasy
+      MYSQL_ROOT_PASSWORD: rootpassword
+    # Change host port to avoid conflicts (host:container)
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./demo
+    container_name: shopeasy-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://db:3306/shopeasy?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: shopeasy
+      DB_PASSWORD: shopeasy
+      # Base64 of 'shopeasy-super-secret-long-key-256bits'
+      JWT_SECRET: c2hvcGVhc3ktc3VwZXItc2VjcmV0LWxvbmcta2V5LTI1NmJpdHM=
+      JWT_EXPIRE_MS: 3600000
+      ALLOWED_ORIGINS: http://localhost:3000
+      SPRING_PROFILES_ACTIVE: default
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Browser must reach backend via host port; use localhost
+        REACT_APP_API_URL: http://localhost:5000
+    container_name: shopeasy-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+volumes:
+  mysql-data:

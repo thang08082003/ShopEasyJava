@@ -50,20 +50,24 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
+        try {
+            Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User user = userRepository.findByEmail(request.getEmail())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadRequestException("Invalid credentials"));
-        String token = jwtService.generateToken(createSpringUser(user));
-        return AuthResponse.builder()
+            String token = jwtService.generateToken(createSpringUser(user));
+            return AuthResponse.builder()
                 .token(token)
                 .userId(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .build();
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            throw new BadRequestException("Invalid credentials");
+        }
     }
 
     public User getCurrentUser() {

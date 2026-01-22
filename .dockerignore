@@ -1,0 +1,14 @@
+.git
+.gitignore
+**/.gradle
+**/build
+**/bin
+**/out
+**/.idea
+**/.vscode
+**/.DS_Store
+frontend/node_modules
+frontend/build
+demo/.gradle
+demo/build
+demo/bin
